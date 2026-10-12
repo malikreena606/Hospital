@@ -1,7 +1,11 @@
 [project]
 name = "kosti_hospital"
 version = "1.0.0"
+description = "تطبيق مستشفى كوستي التعليمي"
+dependencies = [
+    "flet>=0.23.0",
+]
 
-[tool.flet]
-product = "Kosti Hospital"
+[tool.flet.app]
+product_name = "مستشفى كوستي"
 org = "sd.kosti.hospital"
