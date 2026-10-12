@@ -139,21 +139,60 @@ def show_doctors_screen(page, clinic, name, nat):
 
 def show_booking_screen(page, clinic, doctor, spec, nat, name, price):
     page.clean()
-    name_field = ft.TextField(label="اسم المريض", value=name, expand=True)
-    date_field = ft.TextField(label="تاريخ الموعد", expand=True)
+    name_field = ft.TextField(label="اسم المريض", value=name, expand=True, text_align=ft.TextAlign.RIGHT)
+    date_field = ft.TextField(label="موعد الحجز", expand=True, text_align=ft.TextAlign.RIGHT)
     
-    attached_image_status = ft.Text("لم يتم إرفاق صورة", size=12, color=ft.Colors.GREY_700)
+    attached_image_status = ft.Text("لم يتم إرفاق صورة", size=12, color=ft.Colors.GREY_400)
     uploaded_file_path = {"path": ""}
 
     def on_file_result(e: ft.FilePickerResultEvent):
         if e.files and len(e.files) > 0:
             uploaded_file_path["path"] = e.files[0].name
             attached_image_status.value = f"📎 تم إرفاق: {e.files[0].name}"
-            attached_image_status.color = ft.Colors.GREEN_700
+            attached_image_status.color = ft.Colors.GREEN_400
             page.update()
 
     file_picker = ft.FilePicker(on_result=on_file_result)
-    page.overlay.append(file_picker)
+    if file_picker not in page.overlay:
+        page.overlay.append(file_picker)
+
+    def confirm_booking(ev):
+        date_val = (date_field.value or "").strip()
+        if not date_val:
+            show_snack(page, "⚠️ أدخل تاريخ الموعد", ft.Colors.RED_600)
+            return
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute("""INSERT INTO appointments 
+            (patient_name, national_id, clinic_name, doctor_name,
+             appointment_date, ticket_price, image_path, booked_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            (name, nat, clinic, doctor, date_val, price,
+             uploaded_file_path["path"],
+             datetime.now().strftime("%Y-%m-%d %H:%M")))
+        conn.commit()
+        conn.close()
+        show_snack(page, "✅ تم تأكيد الحجز بنجاح", ft.Colors.GREEN_600)
+        show_my_appointments_screen(page, nat)
+
+    page.add(ft.Column([
+        ft.Text("حجز موعد جديد", size=20, weight=ft.FontWeight.BOLD),
+        ft.Text(f"سعر التذكرة: {price}", size=16, color=ft.Colors.BLUE_400, weight=ft.FontWeight.BOLD),
+        name_field, 
+        date_field,
+        ft.Row([
+            ft.Button(
+                content="إرفاق صورة",
+                on_click=lambda _: file_picker.pick_files(allow_multiple=False, file_type=ft.FilePickerFileType.IMAGE),
+                bgcolor=ft.Colors.ORANGE_700,
+                color=ft.Colors.WHITE
+            ),
+            attached_image_status
+        ], alignment=ft.MainAxisAlignment.START),
+        ft.Button(content="تأكيد الحجز", on_click=confirm_booking,
+                  expand=True, height=50, bgcolor=ft.Colors.GREEN_600,
+                  color=ft.Colors.WHITE)
+    ], spacing=15))
+    page.update()
+
 
     def confirm_booking(ev):
         date_val = (date_field.value or "").strip()
