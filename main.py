@@ -17,7 +17,6 @@ else:
 def init_db():
   conn = sqlite3.connect(DB_PATH)
   cursor = conn.cursor()
-  # تم إضافة حقل payment_status لتوثيق حالة الدفع بناءً على إرفاق الصورة
   cursor.execute("""
         CREATE TABLE IF NOT EXISTS appointments (
             appointment_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -74,21 +73,18 @@ def main(page: ft.Page):
   )
 
   def attach_image_click(e):
-    # محاكاة إرفاق الصورة بنجاح وتغيير حالة الدفع
     receipt_attached["value"] = True
     attach_status.value = "تم إرفاق صورة الإيصال بنجاح (تم الدفع) ✅"
     attach_status.color = ft.Colors.GREEN_700
     page.update()
 
-  # زر إرفاق صورة كزر قياسي
-  attach_button = ft.ElevatedButton(
-      content=ft.Row(
-          [ft.Icon(ft.Icons.IMAGE), ft.Text("إرفاق صورة")],
-          alignment=ft.MainAxisAlignment.CENTER,
-      ),
+  # استخدام زر Flet القياسي والمستقر تماماً
+  attach_button = ft.Button(
+      content="إرفاق صورة",
       bgcolor=ft.Colors.WHITE,
       color=ft.Colors.BLUE_900,
       height=45,
+      expand=True,
       on_click=attach_image_click,
   )
 
@@ -104,14 +100,12 @@ def main(page: ft.Page):
       page.update()
       return
 
-    # تحديد حالة الدفع بناءً على إرفاق الصورة
     payment_str = (
         "تم الدفع (بإرفاق الصورة)"
         if receipt_attached["value"]
         else "لم يتم إرفاق صورة"
     )
 
-    # حفظ البيانات في قاعدة البيانات المحلية SQLite
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute(
@@ -131,17 +125,14 @@ def main(page: ft.Page):
     attach_status.color = ft.Colors.RED_600
     page.update()
 
-    # الانتقال لصفحة التقارير مباشرة لرؤية النتيجة
     show_admin_reports(page)
 
-  confirm_button = ft.ElevatedButton(
-      content=ft.Row(
-          [ft.Icon(ft.Icons.CHECK), ft.Text("تأكيد الحجز")],
-          alignment=ft.MainAxisAlignment.CENTER,
-      ),
+  confirm_button = ft.Button(
+      content="تأكيد الحجز",
       bgcolor=ft.Colors.GREEN_600,
       color=ft.Colors.WHITE,
       height=50,
+      expand=True,
       on_click=save_appointment,
   )
 
@@ -203,11 +194,13 @@ def main(page: ft.Page):
                 ),
                 table,
                 ft.Container(height=20),
-                ft.ElevatedButton(
-                    content=ft.Text("← العودة لحجز موعد جديد"),
+                ft.Button(
+                    content="← العودة لحجز موعد جديد",
                     on_click=lambda e: main(pg),
                     bgcolor=ft.Colors.BLUE_600,
                     color=ft.Colors.WHITE,
+                    height=45,
+                    expand=True,
                 ),
             ],
             spacing=15,
@@ -217,7 +210,6 @@ def main(page: ft.Page):
     )
     pg.update()
 
-  # زر لمعاينة التقارير مباشرة
   view_reports_btn = ft.TextButton(
       content=ft.Text("عرض تقارير الإدارة (التحقق من الدفع) 📋"),
       on_click=lambda e: show_admin_reports(page),
