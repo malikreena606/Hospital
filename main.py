@@ -54,7 +54,6 @@ def show_snack(page, text, color=ft.Colors.BLUE_700):
 # 1. شاشة تسجيل الدخول
 def show_login_screen(page):
   page.clean()
-  # تم إضافة color=ft.Colors.BLACK ليكون لون الخط عند الكتابة أسود
   name_field = ft.TextField(
       label="الاسم الكامل",
       expand=True,
@@ -495,10 +494,21 @@ def show_my_appointments_screen(page, nat, name):
                           f"رقم الحجز: #{app_id}",
                           size=12,
                           weight=ft.FontWeight.BOLD,
+                          color=ft.Colors.BLACK,
                       ),
-                      ft.Text(f"👤 {p_name}", weight=ft.FontWeight.BOLD),
-                      ft.Text(f"👨‍⚕️ {doctor} / {clinic}", size=12),
-                      ft.Text(f"📅 {date}", size=12),
+                      ft.Text(
+                          f"👤 {p_name}",
+                          weight=ft.FontWeight.BOLD,
+                          color=ft.Colors.BLACK,
+                      ),
+                      ft.Text(
+                          f"👨‍⚕️ {doctor} / {clinic}",
+                          size=12,
+                          color=ft.Colors.BLACK,
+                      ),
+                      ft.Text(
+                          f"📅 {date}", size=12, color=ft.Colors.BLACK
+                      ),
                       ft.Text(
                           f"💳 الحالة: {p_status}",
                           size=12,
@@ -547,7 +557,7 @@ def show_my_appointments_screen(page, nat, name):
   page.update()
 
 
-# 6. شاشة تقارير الإدارة
+# 6. شاشة تقارير الحجوزات (اللون الأسود للخطوط والنصوص)
 def show_admin_reports(page, name, nat):
   page.clean()
   conn = sqlite3.connect(DB_PATH)
@@ -567,9 +577,15 @@ def show_admin_reports(page, name, nat):
     table_rows.append(
         ft.DataRow(
             cells=[
-                ft.DataCell(ft.Text(p_name or "", size=13, color=ft.Colors.BLACK)),
-                ft.DataCell(ft.Text(clinic or "", size=13, color=ft.Colors.BLACK)),
-                ft.DataCell(ft.Text(date or "", size=13, color=ft.Colors.BLACK)),
+                ft.DataCell(
+                    ft.Text(p_name or "", size=13, color=ft.Colors.BLACK)
+                ),
+                ft.DataCell(
+                    ft.Text(clinic or "", size=13, color=ft.Colors.BLACK)
+                ),
+                ft.DataCell(
+                    ft.Text(date or "", size=13, color=ft.Colors.BLACK)
+                ),
                 ft.DataCell(
                     ft.Text(
                         p_status or "",
@@ -588,10 +604,18 @@ def show_admin_reports(page, name, nat):
 
   table = ft.DataTable(
       columns=[
-          ft.DataColumn(ft.Text("اسم المريض", color=ft.Colors.WHITE)),
-          ft.DataColumn(ft.Text("العيادة", color=ft.Colors.WHITE)),
-          ft.DataColumn(ft.Text("الموعد", color=ft.Colors.WHITE)),
-          ft.DataColumn(ft.Text("حالة الدفع", color=ft.Colors.WHITE)),
+          ft.DataColumn(
+              ft.Text("اسم المريض", color=ft.Colors.WHITE, weight=ft.FontWeight.BOLD)
+          ),
+          ft.DataColumn(
+              ft.Text("العيادة", color=ft.Colors.WHITE, weight=ft.FontWeight.BOLD)
+          ),
+          ft.DataColumn(
+              ft.Text("الموعد", color=ft.Colors.WHITE, weight=ft.FontWeight.BOLD)
+          ),
+          ft.DataColumn(
+              ft.Text("حالة الدفع", color=ft.Colors.WHITE, weight=ft.FontWeight.BOLD)
+          ),
       ],
       rows=table_rows,
       heading_row_color=ft.Colors.PURPLE_600,
