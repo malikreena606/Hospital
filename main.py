@@ -113,7 +113,7 @@ def show_login_screen(page):
                   weight=ft.FontWeight.BOLD,
                   color=ft.Colors.BLUE_900,
               ),
-              ft.Text("نظام الحجز الذكي", size=14, color=ft.Colors.GREY_700),
+              ft.Text("نظام الحجز الالكتروني", size=14, color=ft.Colors.GREY_700),
               ft.Container(height=20),
               name_field,
               nat_field,
@@ -220,7 +220,7 @@ def show_clinics_screen(page, name, nat):
   page.update()
 
 
-# شاشة دخول لوحة الإدارة (كلمة المرور مخفية تماماً - السر هي 1234)
+# شاشة دخول لوحة الإدارة (كلمة المرور 1234 ومخفية تماماً)
 def show_admin_login_screen(page, name, nat):
   page.clean()
   pass_field = ft.TextField(
@@ -351,7 +351,7 @@ def show_doctors_screen(page, clinic, name, nat):
   page.update()
 
 
-# 4. شاشة تأكيد وحجز الموعد
+# 4. شاشة تأكيد وحجز الموعد (مع بنكك وسعر التذكرة 10,000 وصورة الإيصال)
 def show_booking_screen(page, clinic, doctor, spec, nat, name):
   page.clean()
   name_field = ft.TextField(
@@ -402,8 +402,10 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
         "تم الدفع" if receipt_attached["value"] else "لم يتم إرفاق صورة"
     )
 
+    # حفظ الحجز مباشرة في قاعدة البيانات والتأكد من إتمام العملية
     conn = sqlite3.connect(DB_PATH)
-    conn.execute(
+    cursor = conn.cursor()
+    cursor.execute(
         """INSERT INTO appointments 
             (patient_name, national_id, clinic_name, doctor_name,
              appointment_date, payment_status, booked_at) VALUES (?, ?, ?, ?, ?, ?, ?)""",
@@ -420,7 +422,7 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
     conn.commit()
     conn.close()
 
-    show_snack(page, "✅ تم تأكيد الحجز بنجاح", ft.Colors.GREEN_600)
+    show_snack(page, "✅ تم تأكيد الحجز وحفظه بنجاح", ft.Colors.GREEN_600)
     show_my_appointments_screen(page, nat, name)
 
   page.add(
@@ -433,8 +435,9 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
                   weight=ft.FontWeight.BOLD,
                   color=ft.Colors.BLUE_900,
               ),
+              # تعديل "رقم الحساب" إلى "بنكك" كما طلبتِ
               ft.Text(
-                  "رقم الحساب: 9147234 | سعر تذكرة الموعد: 10,000 جنيه سوداني",
+                  "بنكك: 9147234 | سعر تذكرة الموعد: 10,000 جنيه سوداني",
                   size=11,
                   color=ft.Colors.GREY_700,
               ),
@@ -557,7 +560,7 @@ def show_my_appointments_screen(page, nat, name):
   page.update()
 
 
-# 6. شاشة تقارير الحجوزات
+# 6. شاشة تقارير الحجوزات الإدارية (تعرض جميع البيانات بخط أسود)
 def show_admin_reports(page, name, nat):
   page.clean()
   conn = sqlite3.connect(DB_PATH)
@@ -663,3 +666,4 @@ def main(page: ft.Page):
 
 if __name__ == "__main__":
   ft.run(main)
+ 
