@@ -220,13 +220,13 @@ def show_clinics_screen(page, name, nat):
   page.update()
 
 
-# شاشة دخول لوحة الإدارة
+# شاشة دخول لوحة الإدارة (كلمة المرور مخفية تماماً - السر هي 1234)
 def show_admin_login_screen(page, name, nat):
   page.clean()
   pass_field = ft.TextField(
-      label="كلمة سر الإدارة (1234)",
+      label="كلمة سر الإدارة",
       password=True,
-      can_reveal_password=True,
+      can_reveal_password=False,
       expand=True,
       color=ft.Colors.BLACK,
   )
@@ -557,7 +557,7 @@ def show_my_appointments_screen(page, nat, name):
   page.update()
 
 
-# 6. شاشة تقارير الحجوزات (اللون الأسود للخطوط والنصوص)
+# 6. شاشة تقارير الحجوزات
 def show_admin_reports(page, name, nat):
   page.clean()
   conn = sqlite3.connect(DB_PATH)
