@@ -54,20 +54,26 @@ def show_snack(page, text, color=ft.Colors.BLUE_700):
 # 1. شاشة تسجيل الدخول
 def show_login_screen(page):
   page.clean()
+  # تم إضافة color=ft.Colors.BLACK ليكون لون الخط عند الكتابة أسود
   name_field = ft.TextField(
-      label="الاسم الكامل", expand=True, text_align=ft.TextAlign.RIGHT
+      label="الاسم الكامل",
+      expand=True,
+      text_align=ft.TextAlign.RIGHT,
+      color=ft.Colors.BLACK,
   )
   nat_field = ft.TextField(
       label="الرقم الوطني",
       expand=True,
       keyboard_type=ft.KeyboardType.NUMBER,
       max_length=11,
+      color=ft.Colors.BLACK,
   )
   phone_field = ft.TextField(
       label="رقم الهاتف",
       expand=True,
       keyboard_type=ft.KeyboardType.PHONE,
       max_length=10,
+      color=ft.Colors.BLACK,
   )
 
   def handle_login(ev):
@@ -223,6 +229,7 @@ def show_admin_login_screen(page, name, nat):
       password=True,
       can_reveal_password=True,
       expand=True,
+      color=ft.Colors.BLACK,
   )
 
   def check_pass(e):
@@ -355,6 +362,7 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
       border=ft.InputBorder.NONE,
       filled=True,
       bgcolor=ft.Colors.GREY_100,
+      color=ft.Colors.BLACK,
   )
   date_field = ft.TextField(
       label="تاريخ الموعد (مثال: 2026-06-15)",
@@ -362,6 +370,7 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
       border=ft.InputBorder.NONE,
       filled=True,
       bgcolor=ft.Colors.GREY_100,
+      color=ft.Colors.BLACK,
   )
 
   receipt_attached = {"value": False}
@@ -538,7 +547,7 @@ def show_my_appointments_screen(page, nat, name):
   page.update()
 
 
-# 6. شاشة تقارير الإدارة (تعرض: اسم المريض - العيادة - الموعد - تم الدفع)
+# 6. شاشة تقارير الإدارة
 def show_admin_reports(page, name, nat):
   page.clean()
   conn = sqlite3.connect(DB_PATH)
@@ -558,9 +567,9 @@ def show_admin_reports(page, name, nat):
     table_rows.append(
         ft.DataRow(
             cells=[
-                ft.DataCell(ft.Text(p_name or "", size=13)),
-                ft.DataCell(ft.Text(clinic or "", size=13)),
-                ft.DataCell(ft.Text(date or "", size=13)),
+                ft.DataCell(ft.Text(p_name or "", size=13, color=ft.Colors.BLACK)),
+                ft.DataCell(ft.Text(clinic or "", size=13, color=ft.Colors.BLACK)),
+                ft.DataCell(ft.Text(date or "", size=13, color=ft.Colors.BLACK)),
                 ft.DataCell(
                     ft.Text(
                         p_status or "",
