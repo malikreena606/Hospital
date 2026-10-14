@@ -141,24 +141,14 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
     page.clean()
     name_field = ft.TextField(label="اسم المريض", value=name, expand=True)
     date_field = ft.TextField(label="تاريخ الموعد (مثال: 2026-06-15)", expand=True)
+    image_field = ft.TextField(label="اسم أو وصف صورة التحويل (اختياري)", expand=True)
     
-    selected_image_path = ft.Text("لم يتم اختيار صورة", size=12, color=ft.Colors.GREY_700)
-    file_picker = ft.FilePicker()
-    page.overlay.append(file_picker)
-    
-    def on_file_picked(e: ft.FilePickerResultEvent):
-        if e.files:
-            selected_image_path.value = e.files[0].name
-            page.update()
-
-    file_picker.on_result = on_file_picked
-
     def confirm_booking(ev):
         date_val = (date_field.value or "").strip()
         if not date_val:
             show_snack(page, "⚠️ أدخل التاريخ", ft.Colors.RED_600)
             return
-        img_val = selected_image_path.value if selected_image_path.value != "لم يتم اختيار صورة" else ""
+        img_val = (image_field.value or "").strip()
         
         conn = sqlite3.connect(DB_PATH)
         conn.execute("""INSERT INTO appointments 
@@ -183,10 +173,7 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
         ),
         name_field,
         date_field,
-        ft.Row([
-            ft.Button(content="📎 إرفاق صورة التحويل", on_click=lambda _: file_picker.pick_files(allow_multiple=False), expand=True),
-        ]),
-        selected_image_path,
+        image_field,
         ft.Button(content="✅ تأكيد الحجز", on_click=confirm_booking,
                   expand=True, height=50, bgcolor=ft.Colors.GREEN_600, color=ft.Colors.WHITE),
         ft.TextButton(content="← العودة للأطباء", on_click=lambda e: show_clinics_screen(page, name, nat))
@@ -265,7 +252,7 @@ def show_admin_dashboard(page):
         ft.Text("تقارير الحجوزات مع إيصالات الدفع", size=20, weight=ft.FontWeight.BOLD),
         table,
         ft.TextButton(content="← تسجيل الخروج من الإدارة", on_click=lambda e: show_login_screen(page))
-    ], expand=True, scroll=ft.ScrollMode.AUTO))
+    ], expand, scroll=ft.ScrollMode.AUTO))
     page.update()
 
 def main(page: ft.Page):
@@ -277,4 +264,6 @@ def main(page: ft.Page):
     show_login_screen(page)
 
 if __name__ == "__main__":
-    ft.run(main)    
+    ft.run(main)
+
+```
