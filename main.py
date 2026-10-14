@@ -25,7 +25,6 @@ def init_db():
             registered_at TEXT
         )
     """)
-  # جدول المواعيد مع حقل حالة الدفع المرتبط بإرفاق الصورة
   cursor.execute("""
         CREATE TABLE IF NOT EXISTS appointments (
             appointment_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -346,7 +345,7 @@ def show_doctors_screen(page, clinic, name, nat):
   page.update()
 
 
-# 4. شاشة تأكيد وحجز الموعد (مع رقم الحساب وسعر التذكرة وإرفاق الصورة)
+# 4. شاشة تأكيد وحجز الموعد
 def show_booking_screen(page, clinic, doctor, spec, nat, name):
   page.clean()
   name_field = ft.TextField(
@@ -392,9 +391,7 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
       return
 
     payment_str = (
-        "تم الدفع (بإرفاق الصورة)"
-        if receipt_attached["value"]
-        else "لم يتم إرفاق صورة"
+        "تم الدفع" if receipt_attached["value"] else "لم يتم إرفاق صورة"
     )
 
     conn = sqlite3.connect(DB_PATH)
@@ -428,7 +425,6 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
                   weight=ft.FontWeight.BOLD,
                   color=ft.Colors.BLUE_900,
               ),
-              # رقم الحساب وسعر التذكرة في نفس السطر بخط صغير وبدون إطارات أو خطوط فاصلة
               ft.Text(
                   "رقم الحساب: 9147234 | سعر تذكرة الموعد: 10,000 جنيه سوداني",
                   size=11,
@@ -542,15 +538,14 @@ def show_my_appointments_screen(page, nat, name):
   page.update()
 
 
-# 6. شاشة تقارير الإدارة (التحقق من حالة الدفع وإرفاق الصورة)
+# 6. شاشة تقارير الإدارة (تعرض: اسم المريض - العيادة - الموعد - تم الدفع)
 def show_admin_reports(page, name, nat):
   page.clean()
   conn = sqlite3.connect(DB_PATH)
   cursor = conn.cursor()
   cursor.execute(
       """
-        SELECT a.patient_name, a.appointment_date,
-               a.clinic_name, a.payment_status
+        SELECT a.patient_name, a.clinic_name, a.appointment_date, a.payment_status
         FROM appointments a
         ORDER BY a.appointment_id DESC
     """
@@ -559,13 +554,13 @@ def show_admin_reports(page, name, nat):
   conn.close()
 
   table_rows = []
-  for p_name, date, clinic, p_status in rows:
+  for p_name, clinic, date, p_status in rows:
     table_rows.append(
         ft.DataRow(
             cells=[
                 ft.DataCell(ft.Text(p_name or "", size=13)),
-                ft.DataCell(ft.Text(date or "", size=13)),
                 ft.DataCell(ft.Text(clinic or "", size=13)),
+                ft.DataCell(ft.Text(date or "", size=13)),
                 ft.DataCell(
                     ft.Text(
                         p_status or "",
@@ -584,9 +579,9 @@ def show_admin_reports(page, name, nat):
 
   table = ft.DataTable(
       columns=[
-          ft.DataColumn(ft.Text("الاسم", color=ft.Colors.WHITE)),
-          ft.DataColumn(ft.Text("الموعد", color=ft.Colors.WHITE)),
+          ft.DataColumn(ft.Text("اسم المريض", color=ft.Colors.WHITE)),
           ft.DataColumn(ft.Text("العيادة", color=ft.Colors.WHITE)),
+          ft.DataColumn(ft.Text("الموعد", color=ft.Colors.WHITE)),
           ft.DataColumn(ft.Text("حالة الدفع", color=ft.Colors.WHITE)),
       ],
       rows=table_rows,
@@ -598,7 +593,7 @@ def show_admin_reports(page, name, nat):
           [
               ft.Container(height=15),
               ft.Text(
-                  "📊 تقارير الحجوزات (التحقق من الدفع)",
+                  "📊 تقارير الحجوزات الإدارية",
                   size=18,
                   weight=ft.FontWeight.BOLD,
                   color=ft.Colors.PURPLE_800,
@@ -627,7 +622,7 @@ def main(page: ft.Page):
   page.rtl = True
   page.scroll = ft.ScrollMode.AUTO
   page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
-  page.bgcolor = ft.Colors.WHITE  # خلفية بيضاء بالكامل كما طلبتِ
+  page.bgcolor = ft.Colors.WHITE
 
   init_db()
   show_login_screen(page)
