@@ -27,8 +27,7 @@ def init_db():
             clinic_name TEXT,
             doctor_name TEXT,
             appointment_date TEXT,
-            ticket_price TEXT,
-            image_path TEXT,
+            receipt_image TEXT,
             booked_at TEXT
         )
     """)
@@ -63,6 +62,7 @@ def show_login_screen(page):
         if len(phone) != 10 or not phone.startswith("09"):
             show_snack(page, "⚠️ رقم الهاتف غير صحيح", ft.Colors.RED_600)
             return
+        
         conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute("SELECT patient_id FROM patients WHERE national_id = ?", (nat,))
@@ -74,13 +74,12 @@ def show_login_screen(page):
             conn.commit()
         conn.close()
         show_clinics_screen(page, name, nat)
-        
+
     page.add(ft.Column([
         ft.Text("مستشفى كوستي التعليمي", size=22, weight=ft.FontWeight.BOLD),
         name_field, nat_field, phone_field,
         ft.Button(content="تسجيل الدخول", on_click=handle_login,
-                  expand=True, height=50, bgcolor=ft.Colors.BLUE_600,
-                  color=ft.Colors.WHITE)
+                  expand=True, height=50, bgcolor=ft.Colors.BLUE_600, color=ft.Colors.WHITE)
     ], spacing=12))
     page.update()
 
@@ -98,10 +97,15 @@ def show_clinics_screen(page, name, nat):
             expand=True, height=45,
             bgcolor=ft.Colors.BLUE_50, color=ft.Colors.BLUE_900
         ))
+    
     page.add(ft.Column([
         ft.Text(f"مرحباً: {name}", size=14, color=ft.Colors.GREEN_700),
         ft.Text("اختر العيادة المطلوبة", size=20, weight=ft.FontWeight.BOLD),
-        *buttons
+        *buttons,
+        ft.Row([
+            ft.Button(content="📋 مواعيدي", on_click=lambda e: show_my_appointments_screen(page, nat), expand=True, bgcolor=ft.Colors.ORANGE_300),
+            ft.Button(content="🚪 خروج", on_click=lambda e: show_login_screen(page), expand=True, bgcolor=ft.Colors.RED_300),
+        ])
     ], spacing=10, expand=True))
     page.update()
 
@@ -114,15 +118,163 @@ def show_doctors_screen(page, clinic, name, nat):
         "عيادة النساء والتوليد": ("هند عمر", "نساء وتوليد", "الأحد - الخميس", "9 ص - 3 م"),
     }
     doc_name, spec, days, hours = doctors_data.get(clinic, ("", "", "", ""))
-    ticket_price = "10,000 جنيه"
     
     def book(ev):
-        show_booking_screen(page, clinic, doc_name, spec, nat, name, ticket_price)
-        
+        show_booking_screen(page, clinic, doc_name, spec, nat, name)
+
     page.add(ft.Column([
         ft.Text(f"أطباء {clinic}", size=18, weight=ft.FontWeight.BOLD),
         ft.Container(
             content=ft.Column([
                 ft.Text(f"{doc_name} / {clinic}", size=14, weight=ft.FontWeight.BOLD),
                 ft.Text(f"{spec} — {days} — {hours}", size=12),
-                ft.Text(f"💵 رسوم التذكرة: {ticket_
+                ft.Button(content="📅 حجز موعد", on_click=book,
+                          expand=True, height=42, bgcolor=ft.Colors.GREEN_600, color=ft.Colors.WHITE)
+            ], spacing=8),
+            padding=15, bgcolor=ft.Colors.BLUE_50, border_radius=12
+        ),
+        ft.TextButton(content="← العودة للعيادات", on_click=lambda e: show_clinics_screen(page, name, nat))
+    ], spacing=15))
+    page.update()
+
+def show_booking_screen(page, clinic, doctor, spec, nat, name):
+    page.clean()
+    name_field = ft.TextField(label="اسم المريض", value=name, expand=True)
+    date_field = ft.TextField(label="تاريخ الموعد (مثال: 2026-06-15)", expand=True)
+    
+    selected_image_path = ft.Text("لم يتم اختيار صورة", size=12, color=ft.Colors.GREY_700)
+    file_picker = ft.FilePicker()
+    page.overlay.append(file_picker)
+    
+    def on_file_picked(e: ft.FilePickerResultEvent):
+        if e.files:
+            selected_image_path.value = e.files[0].name
+            page.update()
+
+    file_picker.on_result = on_file_picked
+
+    def confirm_booking(ev):
+        date_val = (date_field.value or "").strip()
+        if not date_val:
+            show_snack(page, "⚠️ أدخل التاريخ", ft.Colors.RED_600)
+            return
+        img_val = selected_image_path.value if selected_image_path.value != "لم يتم اختيار صورة" else ""
+        
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute("""INSERT INTO appointments 
+            (patient_name, national_id, clinic_name, doctor_name,
+             appointment_date, receipt_image, booked_at) VALUES (?, ?, ?, ?, ?, ?, ?)""",
+            (name, nat, clinic, doctor, date_val, img_val,
+             datetime.now().strftime("%Y-%m-%d %H:%M")))
+        conn.commit()
+        conn.close()
+        
+        show_snack(page, "✅ تم تأكيد الحجز بنجاح", ft.Colors.GREEN_600)
+        show_my_appointments_screen(page, nat)
+
+    page.add(ft.Column([
+        ft.Text("حجز موعد جديد", size=20, weight=ft.FontWeight.BOLD),
+        ft.Container(
+            content=ft.Column([
+                ft.Text(f"طبيب: {doctor} / {clinic}", weight=ft.FontWeight.BOLD),
+                ft.Text("رقم الحساب: 9147234 — سعر التذكرة: 10,000 جنيه سوداني", size=12, color=ft.Colors.BLUE_900)
+            ]),
+            padding=10, bgcolor=ft.Colors.BLUE_50, border_radius=8
+        ),
+        name_field,
+        date_field,
+        ft.Row([
+            ft.Button(content="📎 إرفاق صورة التحويل", on_click=lambda _: file_picker.pick_files(allow_multiple=False), expand=True),
+        ]),
+        selected_image_path,
+        ft.Button(content="✅ تأكيد الحجز", on_click=confirm_booking,
+                  expand=True, height=50, bgcolor=ft.Colors.GREEN_600, color=ft.Colors.WHITE),
+        ft.TextButton(content="← العودة للأطباء", on_click=lambda e: show_clinics_screen(page, name, nat))
+    ], spacing=15, scroll=ft.ScrollMode.AUTO))
+    page.update()
+
+def show_my_appointments_screen(page, nat):
+    page.clean()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""SELECT appointment_id, patient_name, clinic_name, doctor_name, appointment_date, receipt_image
+        FROM appointments WHERE national_id = ? ORDER BY appointment_id DESC""", (nat,))
+    rows = cursor.fetchall()
+    conn.close()
+    
+    cards = []
+    if not rows:
+        cards.append(ft.Text("لا توجد مواعيد محجوزة", color=ft.Colors.GREY_600))
+    else:
+        for app_id, name, clinic, doctor, date, img in rows:
+            cards.append(ft.Container(
+                content=ft.Column([
+                    ft.Text(f"رقم الحجز: #{app_id}", size=12, weight=ft.FontWeight.BOLD, color=ft.Colors.BLUE_700),
+                    ft.Text(f"👤 {name}", weight=ft.FontWeight.BOLD),
+                    ft.Text(f"👨‍⚕️ {doctor} / {clinic}", size=12),
+                    ft.Text(f"📅 {date}", size=12),
+                    ft.Text(f"📎 الصورة المرفقة: {img if img else 'لا توجد'}", size=11, color=ft.Colors.GREY_700)
+                ], spacing=4),
+                padding=12, bgcolor=ft.Colors.BLUE_50, border_radius=10
+            ))
+            
+    page.add(ft.Column([
+        ft.Text("📋 مواعيدي", size=20, weight=ft.FontWeight.BOLD),
+        *cards,
+        ft.TextButton(content="← العودة للعيادات", on_click=lambda e: show_clinics_screen(page, "", nat))
+    ], spacing=10, expand=True, scroll=ft.ScrollMode.AUTO))
+    page.update()
+
+def show_admin_dashboard(page):
+    page.clean()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT a.patient_name, a.appointment_date,
+               a.clinic_name, p.phone_number, a.receipt_image
+        FROM appointments a
+        LEFT JOIN patients p ON a.national_id = p.national_id
+        ORDER BY a.appointment_id DESC
+    """)
+    rows = cursor.fetchall()
+    conn.close()
+    
+    table_rows = []
+    for name, date, clinic, phone, img in rows:
+        table_rows.append(ft.DataRow(cells=[
+            ft.DataCell(ft.Text(name or "", size=14)),
+            ft.DataCell(ft.Text(date or "", size=14)),
+            ft.DataCell(ft.Text(clinic or "", size=14)),
+            ft.DataCell(ft.Text(phone or "", size=14)),
+            ft.DataCell(ft.Text(img if img else "فارغ", size=12, color=ft.Colors.BLUE_800)),
+        ]))
+        
+    table = ft.DataTable(
+        columns=[
+            ft.DataColumn(ft.Text("الاسم", color=ft.Colors.WHITE)),
+            ft.DataColumn(ft.Text("الموعد", color=ft.Colors.WHITE)),
+            ft.DataColumn(ft.Text("العيادة", color=ft.Colors.WHITE)),
+            ft.DataColumn(ft.Text("رقم الهاتف", color=ft.Colors.WHITE)),
+            ft.DataColumn(ft.Text("صورة الإيصال", color=ft.Colors.WHITE)),
+        ],
+        rows=table_rows,
+        heading_row_color=ft.Colors.PURPLE_600,
+    )
+    
+    page.add(ft.Column([
+        ft.Text("تقارير الحجوزات مع إيصالات الدفع", size=20, weight=ft.FontWeight.BOLD),
+        table,
+        ft.TextButton(content="← تسجيل الخروج من الإدارة", on_click=lambda e: show_login_screen(page))
+    ], expand=True, scroll=ft.ScrollMode.AUTO))
+    page.update()
+
+def main(page: ft.Page):
+    page.title = "مستشفى كوستي التعليمي"
+    page.rtl = True
+    page.scroll = ft.ScrollMode.AUTO
+    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
+    init_db()
+    show_login_screen(page)
+
+if __name__ == "__main__":
+    ft.run(main)    
