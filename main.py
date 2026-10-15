@@ -351,7 +351,7 @@ def show_doctors_screen(page, clinic, name, nat):
   page.update()
 
 
-# 4. شاشة تأكيد وحجز الموعد (مع بنكك وسعر التذكرة 10,000 وصورة الإيصال)
+# 4. شاشة تأكيد وحجز الموعد (مع اختيار صورة الإيصال فعلياً)
 def show_booking_screen(page, clinic, doctor, spec, nat, name):
   page.clean()
   name_field = ft.TextField(
@@ -377,19 +377,27 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
       "لم يتم إرفاق صورة", size=12, color=ft.Colors.RED_600
   )
 
-  def attach_image_click(e):
-    receipt_attached["value"] = True
-    attach_status.value = "تم إرفاق صورة الإيصال بنجاح (تم الدفع) ✅"
-    attach_status.color = ft.Colors.GREEN_700
-    page.update()
+  # منتقي الملفات لاختيار صورة الإيصال فعلياً
+  def on_file_picked(e: ft.FilePickerResultEvent):
+    if e.files:
+      receipt_attached["value"] = True
+      attach_status.value = f"تم إرفاق الملف: {e.files[0].name} (تم الدفع) ✅"
+      attach_status.color = ft.Colors.GREEN_700
+      page.update()
+
+  file_picker = ft.FilePicker(on_result=on_file_picked)
+  page.overlay.append(file_picker)
+  page.update()
 
   attach_button = ft.Button(
-      content="إرفاق صورة",
+      content="إرفاق صورة الإيصال",
       bgcolor=ft.Colors.WHITE,
       color=ft.Colors.BLUE_900,
       height=45,
       expand=True,
-      on_click=attach_image_click,
+      on_click=lambda _: file_picker.pick_files(
+          allow_multiple=False, file_type=ft.FilePickerFileType.IMAGE
+      ),
   )
 
   def confirm_booking(ev):
@@ -402,7 +410,7 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
         "تم الدفع" if receipt_attached["value"] else "لم يتم إرفاق صورة"
     )
 
-    # حفظ الحجز مباشرة في قاعدة البيانات والتأكد من إتمام العملية
+    # حفظ الحجز في قاعدة البيانات والتأكد من إتمام العملية
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute(
@@ -435,7 +443,7 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
                   weight=ft.FontWeight.BOLD,
                   color=ft.Colors.BLUE_900,
               ),
-              # تعديل "رقم الحساب" إلى "بنكك" كما طلبتِ
+              # تعديل "رقم الحساب" إلى "بنكك"
               ft.Text(
                   "بنكك: 9147234 | سعر تذكرة الموعد: 10,000 جنيه سوداني",
                   size=11,
@@ -560,7 +568,7 @@ def show_my_appointments_screen(page, nat, name):
   page.update()
 
 
-# 6. شاشة تقارير الحجوزات الإدارية (تعرض جميع البيانات بخط أسود)
+# 6. شاشة تقارير الحجوزات الإدارية
 def show_admin_reports(page, name, nat):
   page.clean()
   conn = sqlite3.connect(DB_PATH)
@@ -666,4 +674,3 @@ def main(page: ft.Page):
 
 if __name__ == "__main__":
   ft.run(main)
- 
