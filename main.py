@@ -351,7 +351,7 @@ def show_doctors_screen(page, clinic, name, nat):
   page.update()
 
 
-# 4. شاشة تأكيد وحجز الموعد (مع اختيار صورة الإيصال فعلياً)
+# 4. شاشة تأكيد وحجز الموعد
 def show_booking_screen(page, clinic, doctor, spec, nat, name):
   page.clean()
   name_field = ft.TextField(
@@ -377,7 +377,6 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
       "لم يتم إرفاق صورة", size=12, color=ft.Colors.RED_600
   )
 
-  # منتقي الملفات لاختيار صورة الإيصال فعلياً
   def on_file_picked(e: ft.FilePickerResultEvent):
     if e.files:
       receipt_attached["value"] = True
@@ -410,7 +409,6 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
         "تم الدفع" if receipt_attached["value"] else "لم يتم إرفاق صورة"
     )
 
-    # حفظ الحجز في قاعدة البيانات والتأكد من إتمام العملية
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute(
@@ -430,7 +428,7 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
     conn.commit()
     conn.close()
 
-    show_snack(page, "✅ تم تأكيد الحجز وحفظه بنجاح", ft.Colors.GREEN_600)
+    show_snack(page, "✅ تم تأكيد الحجز بنجاح", ft.Colors.GREEN_600)
     show_my_appointments_screen(page, nat, name)
 
   page.add(
@@ -443,7 +441,6 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
                   weight=ft.FontWeight.BOLD,
                   color=ft.Colors.BLUE_900,
               ),
-              # تعديل "رقم الحساب" إلى "بنكك"
               ft.Text(
                   "بنكك: 9147234 | سعر تذكرة الموعد: 10,000 جنيه سوداني",
                   size=11,
