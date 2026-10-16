@@ -332,4 +332,4 @@ def main(page: ft.Page):
     show_login_screen(page)
 
 if __name__ == "__main__":
-    ft.app(target=main)
+    ft.run(main)
