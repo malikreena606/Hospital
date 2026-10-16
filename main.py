@@ -1,6 +1,6 @@
-from datetime import datetime
 import os
 import sqlite3
+from datetime import datetime
 import flet as ft
 
 # إعداد مسار قاعدة البيانات لتكون آمنة ومتوافقة مع الهواتف والحواسيب
@@ -94,21 +94,23 @@ def show_login_screen(page):
 # 2. شاشة عرض العيادات
 def show_clinics_screen(page, name, nat):
     page.clean()
-    clinics = ["عيادة الباطنية", "عيادة الجراحة", "عيادة الأطفال", "عيادة النساء والتوليد"]
-    buttons = []
-    for c in clinics:
-        def make_handler(clinic_name):
-            return lambda ev: show_doctors_screen(page, clinic_name, name, nat)
-        buttons.append(ft.ElevatedButton(text=c, on_click=make_handler(c), expand=True, height=45, bgcolor=ft.Colors.BLUE_50, color=ft.Colors.BLUE_900))
+    
+    btn_batina = ft.ElevatedButton(text="عيادة الباطنية", on_click=lambda ev: show_doctors_screen(page, "عيادة الباطنية", name, nat), expand=True, height=45, bgcolor=ft.Colors.BLUE_50, color=ft.Colors.BLUE_900)
+    btn_surgery = ft.ElevatedButton(text="عيادة الجراحة", on_click=lambda ev: show_doctors_screen(page, "عيادة الجراحة", name, nat), expand=True, height=45, bgcolor=ft.Colors.BLUE_50, color=ft.Colors.BLUE_900)
+    btn_kids = ft.ElevatedButton(text="عيادة الأطفال", on_click=lambda ev: show_doctors_screen(page, "عيادة الأطفال", name, nat), expand=True, height=45, bgcolor=ft.Colors.BLUE_50, color=ft.Colors.BLUE_900)
+    btn_women = ft.ElevatedButton(text="عيادة النساء والتوليد", on_click=lambda ev: show_doctors_screen(page, "عيادة النساء والتوليد", name, nat), expand=True, height=45, bgcolor=ft.Colors.BLUE_50, color=ft.Colors.BLUE_900)
 
     page.add(
         ft.Column([
             ft.Container(height=15),
             ft.Text(f"مرحباً: {name}", size=14, weight=ft.FontWeight.BOLD, color=ft.Colors.GREEN_700),
             ft.Text("اختر العيادة المطلوبة", size=20, weight=ft.FontWeight.BOLD, color=ft.Colors.BLUE_900),
-            *buttons,
+            btn_batina,
+            btn_surgery,
+            btn_kids,
+            btn_women,
             ft.Divider(),
-            ft.ElevatedButton(text="📋 مواعيدي", on_click=lambda e: show_my_appointments_screen(page, nat, name), expand=True, height=45, bgcolor=ft.Colors.ORANGE_100, color=ft.Colors.ORANGE_900),
+            ft.ElevatedButton(text="📋 مواعيدي", on_click=lambda e: show_my_appointments_screen(page, nat, name), expand=True, height=45, bgcolor=ft.Colors.ORANGE_100, color=ft.colors.ORANGE_900 if hasattr(ft.colors, 'ORANGE_900') else ft.Colors.ORANGE_900),
             ft.Row([
                 ft.ElevatedButton(text="👤 الإدارة", on_click=lambda e: show_admin_login_screen(page, name, nat), expand=True, height=40, bgcolor=ft.Colors.PURPLE_100, color=ft.Colors.PURPLE_900),
                 ft.ElevatedButton(text="🚪 خروج", on_click=lambda e: show_login_screen(page), expand=True, height=40, bgcolor=ft.Colors.RED_100, color=ft.Colors.RED_900),
@@ -142,13 +144,16 @@ def show_admin_login_screen(page, name, nat):
 # 3. شاشة عرض الأطباء
 def show_doctors_screen(page, clinic, name, nat):
     page.clean()
-    doctors_data = {
-        "عيادة الباطنية": ("محمد أحمد", "باطنية", "الأحد - الخميس", "8 ص - 2 م"),
-        "عيادة الجراحة": ("أمير محمد", "جراحة عامة", "السبت - الأربعاء", "8 ص - 2 م"),
-        "عيادة الأطفال": ("سلمى خالد", "طب الأطفال", "الأحد - الخميس", "9 ص - 3 م"),
-        "عيادة النساء والتوليد": ("هند عمر", "نساء وتوليد", "الأحد - الخميس", "9 ص - 3 م")
-    }
-    doc_name, spec, days, hours = doctors_data.get(clinic, ("", "", "", ""))
+    
+    doc_name, spec, days, hours = "", "", "", ""
+    if clinic == "عيادة الباطنية":
+        doc_name, spec, days, hours = "محمد أحمد", "باطنية", "الأحد - الخميس", "8 ص - 2 م"
+    elif clinic == "عيادة الجراحة":
+        doc_name, spec, days, hours = "أمير محمد", "جراحة عامة", "السبت - الأربعاء", "8 ص - 2 م"
+    elif clinic == "عيادة الأطفال":
+        doc_name, spec, days, hours = "سلمى خالد", "طب الأطفال", "الأحد - الخميس", "9 ص - 3 م"
+    elif clinic == "عيادة النساء والتوليد":
+        doc_name, spec, days, hours = "هند عمر", "نساء وتوليد", "الأحد - الخميس", "9 ص - 3 م"
 
     page.add(
         ft.Column([
@@ -298,7 +303,7 @@ def show_admin_reports(page, name, nat):
         columns=[
             ft.DataColumn(ft.Text("اسم المريض", color=ft.Colors.WHITE, weight=ft.FontWeight.BOLD)),
             ft.DataColumn(ft.Text("عيادة", color=ft.Colors.WHITE, weight=ft.FontWeight.BOLD)),
-            ft.DataColumn(ft.Text("الموعد", color=ft.Colors.WHITE, weight=ft.FontWeight.BOLD)),
+            ft.DataColumn(ft.Text("الموعد", color=ft.colors.WHITE if hasattr(ft.colors, 'WHITE') else ft.Colors.WHITE, weight=ft.FontWeight.BOLD)),
             ft.DataColumn(ft.Text("حالة الدفع", color=ft.Colors.WHITE, weight=ft.FontWeight.BOLD)),
         ],
         rows=table_rows,
@@ -311,7 +316,7 @@ def show_admin_reports(page, name, nat):
             ft.Text("📊 تقارير الحجوزات الإدارية", size=18, weight=ft.FontWeight.BOLD, color=ft.Colors.PURPLE_800),
             table,
             ft.Container(height=10),
-            ft.ElevatedButton(text="← العودة للعيادات", on_click=lambda e: show_clinics_screen(page, name, nat), expand=True, height=40, bgcolor=ft.colors.GREY_300, color=ft.colors.BLACK),
+            ft.ElevatedButton(text="← العودة للعيادات", on_click=lambda e: show_clinics_screen(page, name, nat), expand=True, height=40, bgcolor=ft.Colors.GREY_300, color=ft.Colors.BLACK),
         ], spacing=15, horizontal_alignment=ft.CrossAxisAlignment.CENTER, scroll=ft.ScrollMode.AUTO)
     )
     page.update()
