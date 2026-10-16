@@ -110,7 +110,7 @@ def show_clinics_screen(page, name, nat):
             btn_kids,
             btn_women,
             ft.Divider(),
-            ft.ElevatedButton(text="📋 مواعيدي", on_click=lambda e: show_my_appointments_screen(page, nat, name), expand=True, height=45, bgcolor=ft.Colors.ORANGE_100, color=ft.colors.ORANGE_900 if hasattr(ft.colors, 'ORANGE_900') else ft.Colors.ORANGE_900),
+            ft.ElevatedButton(text="📋 مواعيدي", on_click=lambda e: show_my_appointments_screen(page, nat, name), expand=True, height=45, bgcolor=ft.Colors.ORANGE_100, color=ft.Colors.ORANGE_900),
             ft.Row([
                 ft.ElevatedButton(text="👤 الإدارة", on_click=lambda e: show_admin_login_screen(page, name, nat), expand=True, height=40, bgcolor=ft.Colors.PURPLE_100, color=ft.Colors.PURPLE_900),
                 ft.ElevatedButton(text="🚪 خروج", on_click=lambda e: show_login_screen(page), expand=True, height=40, bgcolor=ft.Colors.RED_100, color=ft.Colors.RED_900),
@@ -303,7 +303,7 @@ def show_admin_reports(page, name, nat):
         columns=[
             ft.DataColumn(ft.Text("اسم المريض", color=ft.Colors.WHITE, weight=ft.FontWeight.BOLD)),
             ft.DataColumn(ft.Text("عيادة", color=ft.Colors.WHITE, weight=ft.FontWeight.BOLD)),
-            ft.DataColumn(ft.Text("الموعد", color=ft.colors.WHITE if hasattr(ft.colors, 'WHITE') else ft.Colors.WHITE, weight=ft.FontWeight.BOLD)),
+            ft.DataColumn(ft.Text("الموعد", color=ft.Colors.WHITE, weight=ft.FontWeight.BOLD)),
             ft.DataColumn(ft.Text("حالة الدفع", color=ft.Colors.WHITE, weight=ft.FontWeight.BOLD)),
         ],
         rows=table_rows,
