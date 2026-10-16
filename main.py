@@ -3,7 +3,7 @@ import sqlite3
 from datetime import datetime
 import flet as ft
 
-# إعداد مسار قاعدة البيانات
+# إعداد مسار قاعدة البيانات ليكون آمناً ومتوافقاً مع الهواتف الذكية
 if os.environ.get("FLET_APP_STORAGE_DATA"):
     DB_PATH = os.path.join(os.environ["FLET_APP_STORAGE_DATA"], "kosti_hospital.db")
 else:
@@ -41,7 +41,8 @@ def show_snack(page, text, color=ft.colors.BLUE_700):
         bgcolor=color,
         duration=3000,
     )
-    page.show_dialog(snack)
+    page.overlay.append(snack)
+    snack.open = True
     page.update()
 
 # 1. شاشة تسجيل الدخول
@@ -85,7 +86,7 @@ def show_login_screen(page):
             name_field,
             nat_field,
             phone_field,
-            ft.Button(content="تسجيل الدخول", on_click=handle_login, expand=True, height=50, bgcolor=ft.colors.BLUE_600, color=ft.colors.WHITE),
+            ft.ElevatedButton(text="تسجيل الدخول", on_click=handle_login, expand=True, height=50, bgcolor=ft.colors.BLUE_600, color=ft.colors.WHITE),
         ], spacing=12, horizontal_alignment=ft.CrossAxisAlignment.CENTER)
     )
     page.update()
@@ -98,7 +99,7 @@ def show_clinics_screen(page, name, nat):
     for c in clinics:
         def make_handler(clinic_name):
             return lambda ev: show_doctors_screen(page, clinic_name, name, nat)
-        buttons.append(ft.Button(content=c, on_click=make_handler(c), expand=True, height=45, bgcolor=ft.colors.BLUE_50, color=ft.colors.BLUE_900))
+        buttons.append(ft.ElevatedButton(text=c, on_click=make_handler(c), expand=True, height=45, bgcolor=ft.colors.BLUE_50, color=ft.colors.BLUE_900))
 
     page.add(
         ft.Column([
@@ -107,10 +108,10 @@ def show_clinics_screen(page, name, nat):
             ft.Text("اختر العيادة المطلوبة", size=20, weight=ft.FontWeight.BOLD, color=ft.colors.BLUE_900),
             *buttons,
             ft.Divider(),
-            ft.Button(content="📋 مواعيدي", on_click=lambda e: show_my_appointments_screen(page, nat, name), expand=True, height=45, bgcolor=ft.colors.ORANGE_100, color=ft.colors.ORANGE_900),
+            ft.ElevatedButton(text="📋 مواعيدي", on_click=lambda e: show_my_appointments_screen(page, nat, name), expand=True, height=45, bgcolor=ft.colors.ORANGE_100, color=ft.colors.ORANGE_900),
             ft.Row([
-                ft.Button(content="👤 الإدارة", on_click=lambda e: show_admin_login_screen(page, name, nat), expand=True, height=40, bgcolor=ft.colors.PURPLE_100, color=ft.colors.PURPLE_900),
-                ft.Button(content="🚪 خروج", on_click=lambda e: show_login_screen(page), expand=True, height=40, bgcolor=ft.colors.RED_100, color=ft.colors.RED_900),
+                ft.ElevatedButton(text="👤 الإدارة", on_click=lambda e: show_admin_login_screen(page, name, nat), expand=True, height=40, bgcolor=ft.colors.PURPLE_100, color=ft.colors.PURPLE_900),
+                ft.ElevatedButton(text="🚪 خروج", on_click=lambda e: show_login_screen(page), expand=True, height=40, bgcolor=ft.colors.RED_100, color=ft.colors.RED_900),
             ], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
         ], spacing=12, horizontal_alignment=ft.CrossAxisAlignment.STRETCH)
     )
@@ -132,8 +133,8 @@ def show_admin_login_screen(page, name, nat):
             ft.Container(height=30),
             ft.Text("لوحة الإدارة", size=20, weight=ft.FontWeight.BOLD, color=ft.colors.PURPLE_800),
             pass_field,
-            ft.Button(content="دخول", on_click=check_pass, expand=True, height=45, bgcolor=ft.colors.PURPLE_600, color=ft.colors.WHITE),
-            ft.Button(content="← العودة", on_click=lambda e: show_clinics_screen(page, name, nat), expand=True, height=40, bgcolor=ft.colors.GREY_300, color=ft.colors.BLACK),
+            ft.ElevatedButton(text="دخول", on_click=check_pass, expand=True, height=45, bgcolor=ft.colors.PURPLE_600, color=ft.colors.WHITE),
+            ft.ElevatedButton(text="← العودة", on_click=lambda e: show_clinics_screen(page, name, nat), expand=True, height=40, bgcolor=ft.colors.GREY_300, color=ft.colors.BLACK),
         ], spacing=15, horizontal_alignment=ft.CrossAxisAlignment.STRETCH)
     )
     page.update()
@@ -157,11 +158,11 @@ def show_doctors_screen(page, clinic, name, nat):
                 content=ft.Column([
                     ft.Text(f"{doc_name} / {clinic}", size=14, weight=ft.FontWeight.BOLD),
                     ft.Text(f"{spec} — {days} — {hours}", size=12),
-                    ft.Button(content="📅 حجز موعد", on_click=lambda ev: show_booking_screen(page, clinic, doc_name, spec, nat, name), expand=True, height=42, bgcolor=ft.colors.GREEN_600, color=ft.colors.WHITE),
+                    ft.ElevatedButton(text="📅 حجز موعد", on_click=lambda ev: show_booking_screen(page, clinic, doc_name, spec, nat, name), expand=True, height=42, bgcolor=ft.colors.GREEN_600, color=ft.colors.WHITE),
                 ], spacing=8),
                 padding=15, bgcolor=ft.colors.BLUE_50, border_radius=12
             ),
-            ft.Button(content="← العودة للعيادات", on_click=lambda e: show_clinics_screen(page, name, nat), expand=True, height=40, bgcolor=ft.colors.GREY_300, color=ft.colors.BLACK),
+            ft.ElevatedButton(text="← العودة للعيادات", on_click=lambda e: show_clinics_screen(page, name, nat), expand=True, height=40, bgcolor=ft.colors.GREY_300, color=ft.colors.BLACK),
         ], spacing=15, horizontal_alignment=ft.CrossAxisAlignment.STRETCH)
     )
     page.update()
@@ -186,8 +187,8 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
     page.overlay.append(file_picker)
     page.update()
 
-    attach_button = ft.Button(
-        content="إرفاق صورة الإيصال",
+    attach_button = ft.ElevatedButton(
+        text="إرفاق صورة الإيصال",
         bgcolor=ft.colors.WHITE,
         color=ft.colors.BLUE_900,
         height=45,
@@ -224,8 +225,8 @@ def show_booking_screen(page, clinic, doctor, spec, nat, name):
             date_field,
             attach_button,
             attach_status,
-            ft.Button(content="✅ تأكيد الحجز", on_click=confirm_booking, expand=True, height=50, bgcolor=ft.colors.GREEN_600, color=ft.colors.WHITE),
-            ft.Button(content="← العودة للأطباء", on_click=lambda e: show_doctors_screen(page, clinic, name, nat), expand=True, height=40, bgcolor=ft.colors.GREY_300, color=ft.colors.BLACK),
+            ft.ElevatedButton(text="✅ تأكيد الحجز", on_click=confirm_booking, expand=True, height=50, bgcolor=ft.colors.GREEN_600, color=ft.colors.WHITE),
+            ft.ElevatedButton(text="← العودة للأطباء", on_click=lambda e: show_doctors_screen(page, clinic, name, nat), expand=True, height=40, bgcolor=ft.colors.GREY_300, color=ft.colors.BLACK),
         ], spacing=12, horizontal_alignment=ft.CrossAxisAlignment.STRETCH)
     )
     page.update()
@@ -265,8 +266,8 @@ def show_my_appointments_screen(page, nat, name):
             ft.Container(height=15),
             ft.Text("📋 مواعيدي", size=20, weight=ft.FontWeight.BOLD, color=ft.colors.BLUE_900),
             *cards,
-            ft.Button(content="← العودة للعيادات", on_click=lambda e: show_clinics_screen(page, name, nat), expand=True, height=40, bgcolor=ft.colors.GREY_300, color=ft.colors.BLACK),
-        ], spacing=10, expand=True, horizontal_alignment=ft.CrossAxisAlignment.STRETCH, scroll=ft.scroll_mode.AUTO)
+            ft.ElevatedButton(text="← العودة للعيادات", on_click=lambda e: show_clinics_screen(page, name, nat), expand=True, height=40, bgcolor=ft.colors.GREY_300, color=ft.colors.BLACK),
+        ], spacing=10, expand=True, horizontal_alignment=ft.CrossAxisAlignment.STRETCH, scroll=ft.ScrollMode.AUTO)
     )
     page.update()
 
@@ -296,7 +297,7 @@ def show_admin_reports(page, name, nat):
     table = ft.DataTable(
         columns=[
             ft.DataColumn(ft.Text("اسم المريض", color=ft.colors.WHITE, weight=ft.FontWeight.BOLD)),
-            ft.DataColumn(ft.Text("العيادة", color=ft.colors.WHITE, weight=ft.FontWeight.BOLD)),
+            ft.DataColumn(ft.Text("عيادة", color=ft.colors.WHITE, weight=ft.FontWeight.BOLD)),
             ft.DataColumn(ft.Text("الموعد", color=ft.colors.WHITE, weight=ft.FontWeight.BOLD)),
             ft.DataColumn(ft.Text("حالة الدفع", color=ft.colors.WHITE, weight=ft.FontWeight.BOLD)),
         ],
@@ -310,16 +311,16 @@ def show_admin_reports(page, name, nat):
             ft.Text("📊 تقارير الحجوزات الإدارية", size=18, weight=ft.FontWeight.BOLD, color=ft.colors.PURPLE_800),
             table,
             ft.Container(height=10),
-            ft.Button(content="← العودة للعيادات", on_click=lambda e: show_clinics_screen(page, name, nat), expand=True, height=40, bgcolor=ft.colors.GREY_300, color=ft.colors.BLACK),
-        ], spacing=15, horizontal_alignment=ft.CrossAxisAlignment.CENTER, scroll=ft.scroll_mode.AUTO)
+            ft.ElevatedButton(text="← العودة للعيادات", on_click=lambda e: show_clinics_screen(page, name, nat), expand=True, height=40, bgcolor=ft.colors.GREY_300, color=ft.colors.BLACK),
+        ], spacing=15, horizontal_alignment=ft.CrossAxisAlignment.CENTER, scroll=ft.ScrollMode.AUTO)
     )
     page.update()
 
 def main(page: ft.Page):
     page.title = "مستشفى كوستي التعليمي"
     page.rtl = True
-    page.scroll = ft.scroll_mode.AUTO
-    page.horizontal_alignment = ft.cross_alignment.CENTER
+    page.scroll = ft.ScrollMode.AUTO
+    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.bgcolor = ft.colors.WHITE
 
     init_db()
